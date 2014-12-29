@@ -18,10 +18,14 @@ pour faciliter les preuves de proptiétés.
 Require Import Arith.
 Require Import List.
 
-Module Arbre
-Inductive 234tree (A: Type ) : Type :=
-  leaf : 234tree A
- | node: A -> 234tree A -> 234tree A -> 234tree A.
+Module Arbre.
+Inductive tree (A: Type ) : Type :=
+  leaf : tree A
+ |binode: A -> tree A -> tree A -> tree A
+ |trinode : A -> A -> tree A -> tree A -> tree A -> tree A
+ |fournode : A -> A -> A -> tree A -> tree A -> tree A -> tree A -> tree A.
 
 Arguments leaf [A].
-Arguments node [A] _ _ _.
+Arguments binode [A] _ _ _.
+Arguments trinode [A][A] _ _ _ _.
+Arguments fournode [A][A][A] _ _ _ _ _.
