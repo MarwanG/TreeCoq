@@ -17,6 +17,7 @@ pour faciliter les preuves de proptiétés.
 *)
 Require Import Arith.
 Require Import List.
+Require Import ZArith.
 
 Module Arbre.
 Inductive tree (A: Type ) : Type :=
@@ -52,3 +53,57 @@ Definition tree_3: tree nat :=
       (leaf 15)
       (leaf 25)
       (leaf 32)).
+
+Fixpoint ble_nat (n m : nat) : bool :=
+  match n with
+  | O => true
+  | S n' =>
+      match m with
+      | O => false
+      | S m' => ble_nat n' m'
+      end
+  end.
+
+Fixpoint exist (a:nat)(T:tree nat): bool :=
+  match T with
+    |leaf e =>  beq_nat a e
+    |binode e fg fd => (if beq_nat a e 
+                        then true
+                        else (if ble_nat a e then exist a fg else exist a fd))
+    |trinode e1 e2 fg fm fd =>(if beq_nat a e1
+                               then true
+                               else( 
+                                     if beq_nat a e2 then true else(
+                                     if ble_nat a e1 then exist a fg 
+                                     else
+                                     (if ble_nat a e2 then exist a fm else exist a fd)
+                                    )
+                               )) 
+    | _ => false
+    end.
+
+
+Example test_1: exist 5 tree_1 = true.
+Proof.
+simpl.
+reflexivity.
+Qed.
+
+Example test_2: exist 2 tree_2 = true.
+Proof.
+simpl.
+reflexivity.
+Qed.
+
+
+Example test_3: exist 5 tree_2 = false.
+Proof.
+simpl.
+reflexivity.
+Qed.
+
+
+
+
+
+
