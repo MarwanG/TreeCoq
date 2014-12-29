@@ -27,5 +27,5 @@ Inductive tree (A: Type ) : Type :=
 
 Arguments leaf [A].
 Arguments binode [A] _ _ _.
-Arguments trinode [A][A] _ _ _ _.
-Arguments fournode [A][A][A] _ _ _ _ _.
+Arguments trinode [A]_ _ _ _ _.
+Arguments fournode [A]_ _ _ _ _ _ _.
