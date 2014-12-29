@@ -21,12 +21,12 @@ Require Import ZArith.
 
 Module Arbre.
 Inductive tree (A: Type ) : Type :=
-  leaf : A -> tree A
+  leaf : tree A
  |binode: A -> tree A -> tree A -> tree A
  |trinode : A -> A -> tree A -> tree A -> tree A -> tree A
  |quadnode : A -> A -> A -> tree A -> tree A -> tree A -> tree A -> tree A.
 
-Arguments leaf [A] _.
+Arguments leaf[A].
 Arguments binode [A] _ _ _.
 Arguments trinode [A]_ _ _ _ _.
 Arguments quadnode [A]_ _ _ _ _ _ _.
@@ -34,25 +34,34 @@ Arguments quadnode [A]_ _ _ _ _ _ _.
 
 Definition tree_1 : tree nat :=
   (binode 5
-          (leaf 1)
-          (leaf 6)).
+          (binode 1
+             (leaf) (leaf))
+         ( binode 6
+             (leaf) (leaf))
+   ).
 
 Definition tree_2: tree nat :=
   (trinode 10 20
           (binode 2
-              (leaf 1)
-              (leaf 3))
+              (binode 1
+                 (leaf) (leaf))
+              (binode 3
+                 (leaf) (leaf)))
           (binode 13
-              (leaf 12)
-              (leaf 15))
-          (leaf 22)).
+              (binode 12
+                 (leaf) (leaf))
+              (binode 15
+                 (leaf) (leaf)))
+          (binode 22
+                 (leaf) (leaf))).
 
 Definition tree_3: tree nat :=
   (quadnode 10 20 30
-      (leaf 5)
-      (leaf 15)
-      (leaf 25)
-      (leaf 32)).
+      (binode 5 leaf leaf)
+      (binode 15 leaf leaf)
+      (binode 25 leaf leaf)
+      (binode 32 leaf leaf)
+     ).
 
 Fixpoint ble_nat (n m : nat) : bool :=
   match n with
@@ -66,7 +75,7 @@ Fixpoint ble_nat (n m : nat) : bool :=
 
 Fixpoint exist (a:nat)(T:tree nat): bool :=
   match T with
-    |leaf e =>  beq_nat a e
+    |leaf => false
     |binode e fg fd => (if beq_nat a e 
                         then true
                         else (if ble_nat a e then exist a fg else exist a fd))
@@ -79,8 +88,20 @@ Fixpoint exist (a:nat)(T:tree nat): bool :=
                                      (if ble_nat a e2 then exist a fm else exist a fd)
                                     )
                                )) 
-    | _ => false
-    end.
+    | quadnode e1 e2 e3 f1 f2 f3 f4=> if beq_nat a e1 
+                                         then true
+                                      else if beq_nat a e2 
+                                         then true 
+                                      else if beq_nat a e3 
+                                         then true
+                                      else if ble_nat a e1 
+                                         then exist a f1
+                                      else if ble_nat a e2 
+                                         then exist a f2
+                                      else if ble_nat a e3 
+                                         then exist a f3
+                                      else exist a f4    
+ end.
 
 
 Example test_1: exist 5 tree_1 = true.
@@ -101,6 +122,7 @@ Proof.
 simpl.
 reflexivity.
 Qed.
+
 
 
 
