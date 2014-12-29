@@ -20,12 +20,35 @@ Require Import List.
 
 Module Arbre.
 Inductive tree (A: Type ) : Type :=
-  leaf : tree A
+  leaf : A -> tree A
  |binode: A -> tree A -> tree A -> tree A
  |trinode : A -> A -> tree A -> tree A -> tree A -> tree A
- |fournode : A -> A -> A -> tree A -> tree A -> tree A -> tree A -> tree A.
+ |quadnode : A -> A -> A -> tree A -> tree A -> tree A -> tree A -> tree A.
 
-Arguments leaf [A].
+Arguments leaf [A] _.
 Arguments binode [A] _ _ _.
 Arguments trinode [A]_ _ _ _ _.
-Arguments fournode [A]_ _ _ _ _ _ _.
+Arguments quadnode [A]_ _ _ _ _ _ _.
+
+
+Definition tree_1 : tree nat :=
+  (binode 5
+          (leaf 1)
+          (leaf 6)).
+
+Definition tree_2: tree nat :=
+  (trinode 10 20
+          (binode 2
+              (leaf 1)
+              (leaf 3))
+          (binode 13
+              (leaf 12)
+              (leaf 15))
+          (leaf 22)).
+
+Definition tree_3: tree nat :=
+  (quadnode 10 20 30
+      (leaf 5)
+      (leaf 15)
+      (leaf 25)
+      (leaf 32)).
