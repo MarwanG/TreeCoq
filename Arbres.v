@@ -63,6 +63,7 @@ Definition tree_3: tree nat :=
       (binode 32 leaf leaf)
      ).
 
+(*Fonction pour teste less than or equal*)
 Fixpoint ble_nat (n m : nat) : bool :=
   match n with
   | O => true
@@ -168,5 +169,73 @@ end.
 
 
 
+Fixpoint find_closet(T: tree nat): nat :=
+  match T with
+    |binode e fg fd => e
+    |trinode e1 e2 fg fm fd => find_closet fd
+    |quadnode e1 e2 e3 f1 f2 f3 f4 => find_clost f4
+    | _ => 0 (*sens d'etre jamais dans cette cas*)                                      end.
+                          
 
-
+(*sans le cas de racine*)
+Fixpoint delete (a:nat)(T: tree nat): tree nat :=
+match T with
+|trinode e1 e2 fg fm fd => (if beq_nat a e1 then
+                               match fg with
+                               |leaf => binode e2 fg fd
+                               | _ => (let r = find_closet fg in
+                                      trinode r e2 (delete r fg) fm fd)
+                               end
+                            else if beq_nat a e2 then
+                               match fm with
+                               |leaf => binode e1 fd fm
+                               | _ => (let r = find_closet fm in
+                                      trinode e1 e2 fg (delete r fm) fd)
+                               end       
+                           else if ble_nat a e1 then
+                               match fg with
+                               |leaf => trinode e1 e2 fg fm fd
+                               | _   => trinode e1 e2 (delete a fg) fm fd
+                               end
+                           else if ble_nat a e2 then
+                               match fm then
+                               |leaf => trinode e1 e2 fg fm fd
+                               | _ => trinode e1 e2 fg (delete a fm) fd
+                               end               
+                           else
+                             match fd then
+                               |leaf => trinode e1 e2 fg fm fd
+                               |_ => trinode e1 e2 fg fm (delete a fm)
+                               end
+                           )
+|quadnode e1 e2 e3 f1 f2 f3 f4 =>( if beq_nat a e1 then
+                                   match f1 with
+                                     |leaf => trinode e2 e3 f2 f3 f4
+                                     | _ => (let r = find_closet f1 in
+                                             quadnode r e2 e3 (delete r f1) f2 f3 f4)
+                                   end                         
+                                   else if beq_nat a e2 then
+                                   match f2 with
+                                     |leaf => trinode e1 e3 f1 f2 f3
+                                     |_ => (let r = find_closet f2 in
+                                            quadnode e1 r e3 f1 (delete r f2) f3 f4)                                              end
+                                   else if beq_nat a e3 then
+                                   match f3 with
+                                     |leaf => trinode e1 e2 f1 f2 f3
+                                     | _ => (let r = find_closet f3 in
+                                             quadnode e1 e2 r f1 f2 (delete r f3) f4)                                             end
+                                   else if ble_nat a e1 then
+                                   match f1 with
+                                     |leaf => quadnode e1 e2 e3 f1 f2 f3 f4
+                                     | _ => quadnode e1 e2 e3 (delete a f1) f2 f3 f4                                             end
+                                   else if ble_nat a e2 then
+                                   match f2 with
+                                     |leaf => quadnode e1 e2 e3 f1 f2 f3 f4
+                                     | _ => quadnode e1 e2 e3 f1 (delete a f2) f3 f4                                             end
+                                   else if ble_nat a e3 then
+                                   match f3 with
+                                     |leaf => quadnode e1 e2 e3 f1 f2 f3 f4
+                                     | _ => quadnode e1 e2 e3 f1 f2 (delete a f3) f4                                             end
+                                   else quadnode e1 e2 e3 f1 f2 f3 (delete a f4)
+                                 )
+| _ => (*IL MANQUE LE RESTE J'AI EN MARRE !!!!*)
