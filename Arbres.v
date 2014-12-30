@@ -123,7 +123,48 @@ simpl.
 reflexivity.
 Qed.
 
-
+(* les nouveaux élément sont toujours ajoutés en bas de l'arbre *)
+(* le probleme du point fix vient des éclatement, il faut appeler add au niveau le plus bas
+*)
+Fixpoint add (a:nat) (T : tree nat): tree nat :=
+match T with
+|leaf => binode a leaf leaf
+|binode e fg fd => if ble_nat e a then
+                      match fd with
+                      |leaf => trinode e a leaf leaf leaf
+                      |quadnode e1 e2 e3 f1 f2 f3 f4 => (*add a (trinode e e2 fg 
+                                                           (binode e1 f1 f2) (binode e3 f3 f4))) *)
+                      |_ => binode e fg (add a fd)
+                      end
+                   else 
+                      match fg with
+                      |leaf => trinode a e leaf leaf leaf
+                      |quadnode e1 e2 e3 f1 f2 f3 f4 => leaf (* add a (trinode e2 a 
+                                                          (binode e1 f1 f2) (binode e3 f3 f4) fd) *)
+                      |_ => binode e (add a fg) fd
+                      end
+                  
+|trinode e1 e2 fg fm fd => if ble_nat a e1 then
+                              match fg with 
+                              |leaf => quadnode a e1 e2 leaf leaf leaf leaf
+                              |quadnode i1 i2 i3 f1 f2 f3 f4=> leaf
+                              |_ => trinode e1 e2 (add a fg) fm fd
+                              end
+                           else if ble_nat a e2 then
+                              match fm with
+                              |leaf => quadnode e1 a e2 leaf leaf leaf leaf
+                              |quadnode i1 i2 i3 f1 f2 f3 f4 => leaf
+                              |_=> trinode e1 e2 fg (add a fm) fd
+                              end
+                           else
+                              match fd with
+                              |leaf => quadnode e1 e2 a leaf leaf leaf leaf
+                              |quadnode i1 i2 i3 f1 f2 f3 f4 => leaf
+                              |_=> trinode e1 e2 fg fm (add a fd)
+                              end
+|quadnode e1 e2 e3 f1 f2 f3 f4 => (* ce cas n'arrive que si c'est la racine *)
+                                leaf(* add a (binode e2 (binode e1 f1 f2) (binode e3 f3 f4))*)
+end.
 
 
 
