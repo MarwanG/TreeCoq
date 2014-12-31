@@ -61,8 +61,14 @@ Definition tree_3: tree nat :=
       (binode 15 leaf leaf)
       (binode 25 leaf leaf)
       (binode 32 leaf leaf)
-     ).
+  ).
 
+Definition tree_4: tree nat :=
+  (trinode 5 20
+           (trinode 1 2 (leaf)(leaf)(leaf))
+           (trinode 6 7 (leaf)(leaf)(leaf))
+           (trinode 21 22 (leaf)(leaf)(leaf))).
+          
 (*Fonction pour teste less than or equal*)
 Fixpoint ble_nat (n m : nat) : bool :=
   match n with
@@ -168,13 +174,13 @@ match T with
 end.
 
 
-
 Fixpoint find_closet(T: tree nat): nat :=
   match T with
     |binode e fg fd => e
     |trinode e1 e2 fg fm fd => find_closet fd
-    |quadnode e1 e2 e3 f1 f2 f3 f4 => find_clost f4
+    |quadnode e1 e2 e3 f1 f2 f3 f4 => find_closet f4
     | _ => 0 (*sens d'etre jamais dans cette cas*)                                      end.
+
                           
 
 (*sans le cas de racine*)
@@ -183,13 +189,13 @@ match T with
 |trinode e1 e2 fg fm fd => (if beq_nat a e1 then
                                match fg with
                                |leaf => binode e2 fg fd
-                               | _ => (let r = find_closet fg in
-                                      trinode r e2 (delete r fg) fm fd)
+                               | _ => (let r := find_closet fg in
+                                      trinode  r e2 (delete r fg) fm fd)
                                end
                             else if beq_nat a e2 then
                                match fm with
                                |leaf => binode e1 fd fm
-                               | _ => (let r = find_closet fm in
+                               | _ => (let r := find_closet fm in
                                       trinode e1 e2 fg (delete r fm) fd)
                                end       
                            else if ble_nat a e1 then
@@ -198,12 +204,12 @@ match T with
                                | _   => trinode e1 e2 (delete a fg) fm fd
                                end
                            else if ble_nat a e2 then
-                               match fm then
+                               match fm with
                                |leaf => trinode e1 e2 fg fm fd
                                | _ => trinode e1 e2 fg (delete a fm) fd
                                end               
                            else
-                             match fd then
+                             match fd with
                                |leaf => trinode e1 e2 fg fm fd
                                |_ => trinode e1 e2 fg fm (delete a fm)
                                end
@@ -211,18 +217,18 @@ match T with
 |quadnode e1 e2 e3 f1 f2 f3 f4 =>( if beq_nat a e1 then
                                    match f1 with
                                      |leaf => trinode e2 e3 f2 f3 f4
-                                     | _ => (let r = find_closet f1 in
+                                     | _ => (let r := find_closet f1 in
                                              quadnode r e2 e3 (delete r f1) f2 f3 f4)
                                    end                         
                                    else if beq_nat a e2 then
                                    match f2 with
                                      |leaf => trinode e1 e3 f1 f2 f3
-                                     |_ => (let r = find_closet f2 in
+                                     |_ => (let r := find_closet f2 in
                                             quadnode e1 r e3 f1 (delete r f2) f3 f4)                                              end
                                    else if beq_nat a e3 then
                                    match f3 with
                                      |leaf => trinode e1 e2 f1 f2 f3
-                                     | _ => (let r = find_closet f3 in
+                                     | _ => (let r := find_closet f3 in
                                              quadnode e1 e2 r f1 f2 (delete r f3) f4)                                             end
                                    else if ble_nat a e1 then
                                    match f1 with
@@ -238,4 +244,34 @@ match T with
                                      | _ => quadnode e1 e2 e3 f1 f2 (delete a f3) f4                                             end
                                    else quadnode e1 e2 e3 f1 f2 f3 (delete a f4)
                                  )
-| _ => (*IL MANQUE LE RESTE J'AI EN MARRE !!!!*)
+| binode e fg fd => (if beq_nat a e then
+                       match fg with
+                         |leaf => (*MERDE SEUL TRUC QUI MANQUE*) binode e fg fd
+                         |_ => (let r := find_closet fg in
+                                binode r (delete r fg) fd)
+                       end
+                     else if ble_nat a e then
+                         match fg with
+                           |leaf => binode e fg fd
+                           | _ => binode e (delete a fg) fd
+                         end
+                     else
+                       match fd with
+                         |leaf => binode e fg fd
+                         | _ => binode e fg (delete a fd)
+                       end
+                    )
+|leaf => leaf
+end.
+
+
+                       
+
+(*petit test pour savoir si ca marche ou pas*)
+Example test_4: exist 21 (delete 21 tree_4) = false.
+Proof.
+compute.
+simpl.
+reflexivity.
+Qed.
+
