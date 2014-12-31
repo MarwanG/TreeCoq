@@ -149,7 +149,7 @@ match T with
                       |quadnode e1 e2 e3 f1 f2 f3 f4 => leaf (* add a (trinode e2 a 
                                                           (binode e1 f1 f2) (binode e3 f3 f4) fd) *)
                       |_ => binode e (add a fg) fd
-                      end
+                      endx3
                   
 |trinode e1 e2 fg fm fd => if ble_nat a e1 then
                               match fg with 
@@ -176,10 +176,19 @@ end.
 
 Fixpoint find_closet(T: tree nat): nat :=
   match T with
-    |binode e fg fd => e
-    |trinode e1 e2 fg fm fd => find_closet fd
-    |quadnode e1 e2 e3 f1 f2 f3 f4 => find_closet f4
-    | _ => 0 (*sens d'etre jamais dans cette cas*)                                      end.
+    |binode e fg fd => match fd with
+		       |leaf => e
+		       |_ => find_closet fd
+		       end
+    |trinode e1 e2 fg fm fd => match fd with
+			       |leaf => e2 
+			       |_ => find_closet fd
+			       end
+    |quadnode e1 e2 e3 f1 f2 f3 f4 => match f4 with  
+				      |leaf => e3
+				      |_ => find_closet f4
+    | _ => 0 (*sens d'etre jamais dans cette cas*)
+end.
 
                           
 
