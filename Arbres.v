@@ -124,7 +124,7 @@ reflexivity.
 Qed.
 
 
-Example test_3: exist 5 tree_2 = false.
+Example test_3: exist 32 tree_3 = true.
 Proof.
 simpl.
 reflexivity.
@@ -133,8 +133,6 @@ Qed.
 (* les nouveaux élément sont toujours ajoutés en bas de l'arbre *)
 (* le probleme du point fix vient des éclatement, il faut appeler add au niveau le plus bas
 *)
-
-
 
 
 
@@ -217,9 +215,40 @@ match T with
                                                                  fg fm (binode i1 f1 f2)) (binode i3 f3 (add a f4))
                               |_=> trinode e1 e2 fg fm (add a fd)
                               end
-|quadnode e1 e2 e3 f1 f2 f3 f4 => (* ce cas n'arrive que si c'est la racine *)
-                                leaf(* add a (binode e2 (binode e1 f1 f2) (binode e3 f3 f4))*)
+|quadnode e1 e2 e3 f1 f2 f3 f4 => if ble_nat a e1 then
+                                   binode e2 (binode e1 (add a f1) f2) (binode e3 f3 f4) 
+                                  else if ble_nat a e2 then
+                                   binode e2 (binode e1 f1 (add a f2)) (binode e3 f3 f4) 
+                                  else if ble_nat a e3 then
+                                   binode e2 (binode e1 f1 f2) (binode e3 (add a f3) f4) 
+                                  else  
+                                   binode e2 (binode e1 f1 f2) (binode e3 f3 (add a f4))
 end.
+
+
+Definition ex1 : tree nat :=
+(add 1 ( add 5 (add 15 (add 13 (add 3 (add 14 (add 2 (leaf)))))))).
+
+Example test_add2: exist 15 ex1 = true.
+Proof.
+compute.
+reflexivity.
+Qed.
+
+Example test_add5: exist 7 ex1 = false.
+Proof.
+compute.
+reflexivity.
+Qed.
+
+
+
+Example test_add9: exist 2 ex1 = true.
+Proof.
+compute.
+reflexivity.
+Qed.
+
 
 
 Fixpoint find_closet(T: tree nat): nat :=
@@ -235,8 +264,13 @@ Fixpoint find_closet(T: tree nat): nat :=
     |quadnode e1 e2 e3 f1 f2 f3 f4 => match f4 with  
 				      |leaf => e3
 				      |_ => find_closet f4
+                                       end
     | _ => 0 (*sens d'etre jamais dans cette cas*)
 end.
+
+Definition ex1 : tree nat :=
+(add 1 ( add 5 (add 2 (leaf)))).
+
 
                           
 
