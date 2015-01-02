@@ -133,40 +133,88 @@ Qed.
 (* les nouveaux élément sont toujours ajoutés en bas de l'arbre *)
 (* le probleme du point fix vient des éclatement, il faut appeler add au niveau le plus bas
 *)
+
+
+
+
+
 Fixpoint add (a:nat) (T : tree nat): tree nat :=
 match T with
 |leaf => binode a leaf leaf
 |binode e fg fd => if ble_nat e a then
                       match fd with
                       |leaf => trinode e a leaf leaf leaf
-                      |quadnode e1 e2 e3 f1 f2 f3 f4 => (*add a (trinode e e2 fg 
-                                                           (binode e1 f1 f2) (binode e3 f3 f4))) *)
+                      |quadnode e1 e2 e3 f1 f2 f3 f4 => if ble_nat a e1 then (trinode e e2 fg 
+                                                           (binode e1 (add a f1) f2) (binode e3 f3 f4))
+                                                        else if ble_nat a e2 then (trinode e e2 fg 
+                                                           (binode e1 f1 (add a f2)) (binode e3 f3 f4)) 
+                                                        else if ble_nat a e3 then (trinode e e2 fg 
+                                                           (binode e1 f1 f2) (binode e3 (add a f3) f4)) 
+                                                        else trinode e e2 fg 
+                                                           (binode e1 f1 f2) (binode e3 f3 (add a f4))
                       |_ => binode e fg (add a fd)
                       end
                    else 
                       match fg with
                       |leaf => trinode a e leaf leaf leaf
-                      |quadnode e1 e2 e3 f1 f2 f3 f4 => leaf (* add a (trinode e2 a 
-                                                          (binode e1 f1 f2) (binode e3 f3 f4) fd) *)
+                      |quadnode e1 e2 e3 f1 f2 f3 f4 =>if ble_nat a e1 then (trinode e e2
+                                                           (binode e1 (add a f1) f2) (binode e3 f3 f4) fd)
+                                                        else if ble_nat a e2 then (trinode e e2 fg 
+                                                           (binode e1 f1 (add a f2)) (binode e3 f3 f4)) 
+                                                        else if ble_nat a e3 then (trinode e e2 
+                                                           (binode e1 f1 f2) (binode e3 (add a f3) f4) fd) 
+                                                        else (trinode e e2 
+                                                           (binode e1 f1 f2) (binode e3 f3 (add a f4)) fd) 
                       |_ => binode e (add a fg) fd
-                      endx3
+                      end
                   
 |trinode e1 e2 fg fm fd => if ble_nat a e1 then
                               match fg with 
                               |leaf => quadnode a e1 e2 leaf leaf leaf leaf
-                              |quadnode i1 i2 i3 f1 f2 f3 f4=> leaf
+                              |quadnode i1 i2 i3 f1 f2 f3 f4=> if ble_nat a i1 then 
+                                                                (quadnode i2 e1 e2 
+                                                                (binode i1 (add a f1) f2) (binode i3 f3 f4) fm fd)
+                                                               else if ble_nat a i2 then 
+                                                                (quadnode i1 e1 e2 
+                                                                (binode i2 f1 (add a f2)) (binode i3 f3 f4) fm fd)
+                                                               else if ble_nat a i3 then 
+                                                                 (quadnode i1 e1 e2 
+                                                                 (binode i2 f1 f2) (binode i3 (add a f3) f4) fm fd)
+                                                               else (quadnode i1 e1 e2 
+                                                                 (binode i2 f1 f2) (binode i3 f3 (add a f4)) fm fd)
                               |_ => trinode e1 e2 (add a fg) fm fd
                               end
                            else if ble_nat a e2 then
                               match fm with
                               |leaf => quadnode e1 a e2 leaf leaf leaf leaf
-                              |quadnode i1 i2 i3 f1 f2 f3 f4 => leaf
+                              |quadnode i1 i2 i3 f1 f2 f3 f4 => if ble_nat a i1 then 
+                                                                 (quadnode e1 i2 e2
+                                                                 fg (binode i1 (add a f1) f2) (binode i3 f3 f4) fd)                                                                 
+                                                                else if ble_nat a i2 then 
+                                                                 (quadnode e1 i2 e2
+                                                                 fg (binode i1 f1 (add a f2)) (binode i3 f3 f4) fd)  
+                                                                else if ble_nat a i3 then  
+                                                                 (quadnode e1 i2 e2
+                                                                 fg (binode i1 f1 f2) (binode i3 (add a f3) f4) fd)  
+                                                                else 
+                                                                 (quadnode e1 i2 e2
+                                                                 fg (binode i1 f1 f2) (binode i3 f3 (add a f4)) fd)  
                               |_=> trinode e1 e2 fg (add a fm) fd
                               end
                            else
                               match fd with
                               |leaf => quadnode e1 e2 a leaf leaf leaf leaf
-                              |quadnode i1 i2 i3 f1 f2 f3 f4 => leaf
+                              |quadnode i1 i2 i3 f1 f2 f3 f4 => if ble_nat a i1 then 
+                                                                 (quadnode e1 e2 i2
+                                                                 fg fm (binode i1 (add a f1) f2) (binode i3 f3 f4))
+                                                                else if ble_nat a i2 then 
+                                                                 (quadnode e1 e2 i2
+                                                                 fg fm (binode i1 f1 (add a f2)) (binode i3 f3 f4))
+                                                                else if ble_nat a i3 then 
+                                                                 (quadnode e1 e2 i2
+                                                                 fg fm (binode i1 f1 f2)) (binode i3 (add a f3) f4)
+                                                                else (quadnode e1 e2 i2
+                                                                 fg fm (binode i1 f1 f2)) (binode i3 f3 (add a f4))
                               |_=> trinode e1 e2 fg fm (add a fd)
                               end
 |quadnode e1 e2 e3 f1 f2 f3 f4 => (* ce cas n'arrive que si c'est la racine *)
