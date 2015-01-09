@@ -317,10 +317,9 @@ compute.
 reflexivity.
 Qed.
 
-
-
 Example test_5: exist 5 (delete 5 ex2) = false.
 Proof.
 compute.
 reflexivity.
 Qed.
+ 
