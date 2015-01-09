@@ -300,105 +300,6 @@ Fixpoint to_list (a:nat)(T: tree nat): list nat :=
   end.
 
 
-(*
-Delete n'est pas complement method peut-etre plus effiace mais manque un cas
-*)
-Fixpoint delete_bis (a:nat)(T: tree nat): tree nat :=
-match T with
-|trinode e1 e2 fg fm fd => (if beq_nat a e1 then
-                               match fg with
-                               |leaf => binode e2 fg fd
-                               | _ => (let r := find_closet fg in
-                                      trinode  r e2 (delete_bis r fg) fm fd)
-                               end
-                            else if beq_nat a e2 then
-                               match fm with
-                               |leaf => binode e1 fd fm
-                               | _ => (let r := find_closet fm in
-                                      trinode e1 e2 fg (delete_bis r fm) fd)
-                               end       
-                           else if ble_nat a e1 then
-                               match fg with
-                               |leaf => trinode e1 e2 fg fm fd
-                               | _   => trinode e1 e2 (delete_bis a fg) fm fd
-                               end
-                           else if ble_nat a e2 then
-                               match fm with
-                               |leaf => trinode e1 e2 fg fm fd
-                               | _ => trinode e1 e2 fg (delete_bis a fm) fd
-                               end               
-                           else
-                             match fd with
-                               |leaf => trinode e1 e2 fg fm fd
-                               |_ => trinode e1 e2 fg fm (delete_bis a fm)
-                               end
-                           )
-|quadnode e1 e2 e3 f1 f2 f3 f4 =>( if beq_nat a e1 then
-                                   match f1 with
-                                     |leaf => trinode e2 e3 f2 f3 f4
-                                     | _ => (let r := find_closet f1 in
-                                             quadnode r e2 e3 (delete_bis r f1) f2 f3 f4)
-                                   end                         
-                                   else if beq_nat a e2 then
-                                   match f2 with
-                                     |leaf => trinode e1 e3 f1 f2 f3
-                                     |_ => (let r := find_closet f2 in
-                                            quadnode e1 r e3 f1 (delete_bis r f2) f3 f4)                                              end
-                                   else if beq_nat a e3 then
-                                   match f3 with
-                                     |leaf => trinode e1 e2 f1 f2 f3
-                                     | _ => (let r := find_closet f3 in
-                                             quadnode e1 e2 r f1 f2 (delete_bis r f3) f4)                                             end
-                                   else if ble_nat a e1 then
-                                   match f1 with
-                                     |leaf => quadnode e1 e2 e3 f1 f2 f3 f4
-                                     | _ => quadnode e1 e2 e3 (delete_bis a f1) f2 f3 f4                                             end
-                                   else if ble_nat a e2 then
-                                   match f2 with
-                                     |leaf => quadnode e1 e2 e3 f1 f2 f3 f4
-                                     | _ => quadnode e1 e2 e3 f1 (delete_bis a f2) f3 f4                                             end
-                                   else if ble_nat a e3 then
-                                   match f3 with
-                                     |leaf => quadnode e1 e2 e3 f1 f2 f3 f4
-                                     | _ => quadnode e1 e2 e3 f1 f2 (delete_bis a f3) f4                                             end
-                                   else quadnode e1 e2 e3 f1 f2 f3 (delete_bis a f4)
-                                 )
-| binode e fg fd => (if beq_nat a e then
-                       match fg with
-                         |leaf => (*MERDE SEUL TRUC QUI MANQUE*) binode e fg fd
-                         |_ => (let r := find_closet fg in
-                                binode r (delete_bis r fg) fd)
-                       end
-                     else if ble_nat a e then
-                         match fg with
-                           |leaf => binode e fg fd
-                           | _ => binode e (delete_bis a fg) fd
-                         end
-                     else
-                       match fd with
-                         |leaf => binode e fg fd
-                         | _ => binode e fg (delete_bis a fd)
-                       end
-                    )
-|leaf => leaf
-end.
-
-
-                       
-
-(*petit test pour savoir si ca marche ou pas*)
-Example test_4: exist 21 (delete_bis 21 tree_4) = false.
-Proof.
-compute.
-reflexivity.
-Qed.
-
-
-Example test_5: to_list 5 ex2 = 1::2::nil.
-Proof.
-compute.
-reflexivity.
-Qed.
 
 Fixpoint from_list (l : list nat): tree nat :=
 match l with
@@ -410,8 +311,15 @@ end.
 Definition delete (a:nat)(T: tree nat): tree nat :=
   from_list (to_list a T).
 
+Example test_4: to_list 5 ex2 = 1::2::nil.
+Proof.
+compute.
+reflexivity.
+Qed.
 
-Example test_6: exist 5 (delete 5 ex2) = false.
+
+
+Example test_5: exist 5 (delete 5 ex2) = false.
 Proof.
 compute.
 reflexivity.
