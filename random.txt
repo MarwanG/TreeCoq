@@ -3,6 +3,24 @@ IN THIS FILE.
 COPYWRITES APPLY HERE AS WELL.
 
 
+
+Fixpoint find_closet(T: tree nat): nat :=
+  match T with
+    |binode e fg fd => match fd with
+		       |leaf => e
+		       |_ => find_closet fd
+		       end
+    |trinode e1 e2 fg fm fd => match fd with
+			       |leaf => e2 
+			       |_ => find_closet fd
+			       end
+    |quadnode e1 e2 e3 f1 f2 f3 f4 => match f4 with  
+				      |leaf => e3
+				      |_ => find_closet f4
+                                       end
+    | _ => 0 (*sens d'etre jamais dans cette cas*)
+end.
+
 Fixpoint delete_bis (a:nat)(T: tree nat): tree nat :=
 match T with
 |trinode e1 e2 fg fm fd => (if beq_nat a e1 then

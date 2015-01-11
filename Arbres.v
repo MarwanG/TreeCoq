@@ -19,6 +19,7 @@ Require Import Arith.
 Require Import List.
 Require Import ZArith.
 
+(* Structure of the tree which includes 4 types of objects *)
 Module Arbre.
 Inductive tree (A: Type ) : Type :=
   leaf : tree A
@@ -31,6 +32,8 @@ Arguments binode [A] _ _ _.
 Arguments trinode [A]_ _ _ _ _.
 Arguments quadnode [A]_ _ _ _ _ _ _.
 
+
+(* Definition of different trees *)
 
 Definition tree_1 : tree nat :=
   (binode 5
@@ -69,7 +72,8 @@ Definition tree_4: tree nat :=
            (trinode 6 7 (leaf)(leaf)(leaf))
            (trinode 21 22 (leaf)(leaf)(leaf))).
           
-(*Fonction pour teste less than or equal*)
+(* Function to test if value is equal or less than l*)
+
 Fixpoint ble_nat (n m : nat) : bool :=
   match n with
   | O => true
@@ -79,6 +83,8 @@ Fixpoint ble_nat (n m : nat) : bool :=
       | S m' => ble_nat n' m'
       end
   end.
+
+(* Function to test if value a exists in the T  *)
 
 Fixpoint exist (a:nat)(T:tree nat): bool :=
   match T with
@@ -111,6 +117,8 @@ Fixpoint exist (a:nat)(T:tree nat): bool :=
  end.
 
 
+(* Examples for function exist *)
+
 Example test_1: exist 5 tree_1 = true.
 Proof.
 simpl.
@@ -133,8 +141,6 @@ Qed.
 (* les nouveaux élément sont toujours ajoutés en bas de l'arbre *)
 (* le probleme du point fix vient des éclatement, il faut appeler add au niveau le plus bas
 *)
-
-
 
 Fixpoint add (a:nat) (T : tree nat): tree nat :=
 match T with
@@ -225,53 +231,33 @@ match T with
                                    binode e2 (binode e1 f1 f2) (binode e3 f3 (add a f4))
 end.
 
+(* Examples *)
 
 Definition ex1 : tree nat :=
 (add 1 ( add 5 (add 15 (add 13 (add 3 (add 14 (add 2 (leaf)))))))).
 
-Example test_add2: exist 15 ex1 = true.
-Proof.
-compute.
-reflexivity.
-Qed.
-
-Example test_add5: exist 7 ex1 = false.
-Proof.
-compute.
-reflexivity.
-Qed.
-
-
-
-Example test_add9: exist 2 ex1 = true.
-Proof.
-compute.
-reflexivity.
-Qed.
-
-
-
-Fixpoint find_closet(T: tree nat): nat :=
-  match T with
-    |binode e fg fd => match fd with
-		       |leaf => e
-		       |_ => find_closet fd
-		       end
-    |trinode e1 e2 fg fm fd => match fd with
-			       |leaf => e2 
-			       |_ => find_closet fd
-			       end
-    |quadnode e1 e2 e3 f1 f2 f3 f4 => match f4 with  
-				      |leaf => e3
-				      |_ => find_closet f4
-                                       end
-    | _ => 0 (*sens d'etre jamais dans cette cas*)
-end.
-
 Definition ex2 : tree nat :=
-(add 1 ( add 5 (add 2 (leaf)))).
+  (add 1 ( add 5 (add 2 (leaf)))).
 
+Example test_5: exist 15 ex1 = true.
+Proof.
+compute.
+reflexivity.
+Qed.
 
+Example test_6: exist 7 ex1 = false.
+Proof.
+compute.
+reflexivity.
+Qed.
+
+Example test_7: exist 2 ex1 = true.
+Proof.
+compute.
+reflexivity.
+Qed.
+
+(* function places all values of T in a tree except for a *)
                           
 Fixpoint to_list (a:nat)(T: tree nat): list nat :=
   match T with
@@ -300,6 +286,7 @@ Fixpoint to_list (a:nat)(T: tree nat): list nat :=
   end.
 
 
+(* function that converts a list into a tree *)
 
 Fixpoint from_list (l : list nat): tree nat :=
 match l with
@@ -308,18 +295,21 @@ match l with
 end.
 
 
+(* function to the delete a from T *)
+
 Definition delete (a:nat)(T: tree nat): tree nat :=
   from_list (to_list a T).
 
-Example test_4: to_list 5 ex2 = 1::2::nil.
+
+Example test_8: to_list 5 ex2 = 1::2::nil.
 Proof.
 compute.
 reflexivity.
 Qed.
 
-Example test_5: exist 5 (delete 5 ex2) = false.
+Example test_9: exist 5 (delete 5 ex2) = false.
 Proof.
 compute.
 reflexivity.
 Qed.
- 
+
