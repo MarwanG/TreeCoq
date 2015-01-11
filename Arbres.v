@@ -257,8 +257,10 @@ compute.
 reflexivity.
 Qed.
 
+                           
+
 (* function places all values of T in a tree except for a *)
-                          
+                         
 Fixpoint to_list (a:nat)(T: tree nat): list nat :=
   match T with
     |trinode e1 e2 fg fm fd => (if beq_nat e1 a then
@@ -312,4 +314,36 @@ Proof.
 compute.
 reflexivity.
 Qed.
+
+Fixpoint count (T: tree nat): nat :=
+  match T with
+    |leaf => 0
+    |binode _ f1 f2 => 1 + (count f1) + (count f2)
+    |trinode _ _ f1 f2 f3 => 2 + (count f1) + (count f2) + (count f3)
+    |quadnode _ _ _ f1 f2 f3 f4 => 3 + (count f1) + (count f2) + (count f3) + (count f4)           end.  
+
+
+Definition equals_nb (t1: tree nat)(t2 : tree nat): bool :=
+  beq_nat (count t1) (count t2).
+  
+
+Fixpoint equals_value (t1 : tree nat)(t2 : tree nat): bool :=
+  match t1 with
+    |leaf => true
+    |binode e1 f1 f2 => andb (andb (exist e1 t2)  (equals_value f1 t2)) (equals_value f2 t2) 
+    |trinode e1 e2 f1 f2 f3 =>  (andb
+                                   (andb
+                                      (andb (exist e1 t2)  (exist e2 t2))
+                                      (andb (equals_value f1 t2)  (equals_value f2 t2)))
+                                   (equals_value f3 t2))
+    |quadnode e1 e2 e3 f1 f2 f3 f4 => (andb  (andb
+                                          (andb (exist e1 t2) (exist e2 t2))
+                                          (andb (exist e3 t2) (equals_value f1 t2)))
+                                       (andb
+                                          (andb (equals_value f2 t2) (equals_value f3 t2))
+                                          (equals_value f4 t2)))
+  end.
+
+Definition equal (t1: tree nat)(t2: tree nat) : bool :=
+  andb (equals_value t1 t2) (equals_nb t1 t2).
 
