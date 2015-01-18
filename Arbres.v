@@ -84,6 +84,15 @@ Fixpoint ble_nat (n m : nat) : bool :=
       end
   end.
 
+(*Function to test if value is equal *)
+Fixpoint eq_nat (n m : nat) : bool :=
+match (n,m) with
+|(0,0) => true
+|(0,S m') => false
+|(S n' , 0) => false
+|(S n',S m') => eq_nat n' m' 
+end.
+
 (* Function to test if value a exists in the T  *)
 
 Fixpoint exist (a:nat)(T:tree nat): bool :=
@@ -361,6 +370,35 @@ reflexivity.
 Qed.
 
 
+Definition max (a:nat) (b:nat) : nat :=
+if ble_nat b a 
+then a else b.
+
+Definition min (a:nat) (b:nat) :nat :=
+if ble_nat b a 
+then b else a.
+
+Fixpoint hauteurMax(t:tree nat ) : nat :=
+match t with
+|leaf => 0
+|binode _ tg td => 1 + (max (hauteurMax tg) (hauteurMax td))
+|trinode _ _ tg tm td => 1 + (max (hauteurMax tg) (max (hauteurMax tm) (hauteurMax td)))
+|quadnode _ _ _ t1 t2 t3 t4 => 1+ (max (hauteurMax t1) (max (hauteurMax t2) (max (hauteurMax t3) (hauteurMax t4))))
+end.
+
+Fixpoint hauteurMin(t:tree nat ) : nat :=
+match t with
+|leaf => 0
+|binode _ tg td => 1 + (min (hauteurMax tg) (hauteurMax td))
+|trinode _ _ tg tm td => 1 + (min (hauteurMax tg) (min (hauteurMax tm) (hauteurMax td)))
+|quadnode _ _ _ t1 t2 t3 t4 => 1+ (min (hauteurMax t1) (min (hauteurMax t2) (min (hauteurMax t3) (hauteurMax t4))))
+end.
+
+Definition estEquilibre (t : tree nat) : bool :=
+beq_nat (hauteurMax t) (hauteurMin t).
+
+
+(*
 Fixpoint ordered (t: tree nat): bool :=
   match t with
     |leaf => true 
@@ -505,4 +543,7 @@ Fixpoint ordered (t: tree nat): bool :=
                                         end
                                       else
                                         false
-  end.
+  end. *)
+
+
+
