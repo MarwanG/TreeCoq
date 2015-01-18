@@ -18,6 +18,7 @@ pour faciliter les preuves de proptiétés.
 Require Import Arith.
 Require Import List.
 Require Import ZArith.
+Require Import Bool.
 
 (* Structure of the tree which includes 4 types of objects *)
 Module Arbre.
@@ -394,8 +395,29 @@ match t with
 |quadnode _ _ _ t1 t2 t3 t4 => 1+ (min (hauteurMax t1) (min (hauteurMax t2) (min (hauteurMax t3) (hauteurMax t4))))
 end.
 
-Definition estEquilibre (t : tree nat) : bool :=
-beq_nat (hauteurMax t) (hauteurMin t).
+(* inspiré de lafonction estComplet
+http://pauillac.inria.fr/~cheno/taupe/transparents/arbres-par4.pdf *)
+
+Fixpoint estEquilibre (t : tree nat) : bool :=
+match t with
+|leaf =>true
+|binode _ tg td =>  if (beq_nat (hauteurMax tg) (hauteurMax td)) then 
+                      andb (estEquilibre tg) (estEquilibre td)
+                      else false
+
+|trinode _ _ tg tm td =>  if (beq_nat (hauteurMax tg) (hauteurMax td)) then
+                              if (beq_nat (hauteurMax tg) (hauteurMax tm)) then
+                                  (estEquilibre tg) && (estEquilibre td) && (estEquilibre tm)
+                                 else false
+                         else false
+|quadnode _ _ _ t1 t2 t3 t4 => if (beq_nat (hauteurMax t1) (hauteurMax t2)) then
+                                   if (beq_nat (hauteurMax t1) (hauteurMax t3)) then
+                                      if (beq_nat (hauteurMax t1) (hauteurMax t4 )) then
+                                         (estEquilibre t1) && (estEquilibre t2) && (estEquilibre t3) && (estEquilibre t4)
+                                      else false
+                                   else false
+                                else false
+end.
 
 
 (*
