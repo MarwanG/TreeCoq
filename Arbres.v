@@ -85,7 +85,21 @@ Fixpoint ble_nat (n m : nat) : bool :=
       end
   end.
 
+
+Lemma  ble_nat_refl:
+forall X: nat, (ble_nat X X) = true.
+intros.
+induction X.
++
+  simpl.
+  reflexivity.
++
+  simpl.
+  exact IHX.
+Qed.
+  
 (*Function to test if value is equal *)
+
 Fixpoint eq_nat (n m : nat) : bool :=
 match (n,m) with
 |(0,0) => true
@@ -93,6 +107,8 @@ match (n,m) with
 |(S n' , 0) => false
 |(S n',S m') => eq_nat n' m' 
 end.
+
+  
 
 (* Function to test if value a exists in the T  *)
 
@@ -127,7 +143,7 @@ Fixpoint exist (a:nat)(T:tree nat): bool :=
  end.
 
 
-(* Examples for function exist *)
+(* Tests for function exist *)
 
 Example test_1: exist 5 tree_1 = true.
 Proof.
@@ -241,13 +257,15 @@ match T with
                                    binode e2 (binode e1 f1 f2) (binode e3 f3 (add a f4))
 end.
 
-(* Examples *)
+(* Examples For add*)
 
 Definition ex1 : tree nat :=
 (add 1 ( add 5 (add 15 (add 13 (add 3 (add 14 (add 2 (leaf)))))))).
 
 Definition ex2 : tree nat :=
   (add 1 ( add 5 (add 2 (leaf)))).
+
+(* Tests for Add *)
 
 Example test_5: exist 15 ex1 = true.
 Proof.
@@ -267,8 +285,44 @@ compute.
 reflexivity.
 Qed.
 
-                           
 
+(* Lemmas for ADD *)
+
+Lemma add_exist:
+  forall T: tree nat ,forall X: nat, exist X (add X T) = true.
+Proof.
+intros.
+induction T.
++
+  simpl.
+  rewrite <- beq_nat_refl.
+  reflexivity.
++
+  induction T1.
+  -
+    simpl.
+    induction T2.
+    *
+      .
+      
+      (*case X.
+      case a.
+        rewrite ble_nat_refl.
+        simpl.
+        reflexivity.
+
+        intros.
+        simpl.
+        reflexivity.
+
+        intros.
+        destruct a.
+        simpl.
+        rewrite <- beq_nat_refl.
+        reflexivity.
+        
+        simpl. *)
+        
 (* function places all values of T in a tree except for a *)
                          
 Fixpoint to_list (a:nat)(T: tree nat): list nat :=
@@ -297,6 +351,13 @@ Fixpoint to_list (a:nat)(T: tree nat): list nat :=
     |leaf => nil
   end.
 
+(* test for to_list *)
+
+Example test_8: to_list 5 ex2 = 1::2::nil.
+Proof.
+compute.
+reflexivity.
+Qed.
 
 (* function that converts a list into a tree *)
 
@@ -312,18 +373,16 @@ end.
 Definition delete (a:nat)(T: tree nat): tree nat :=
   from_list (to_list a T).
 
-
-Example test_8: to_list 5 ex2 = 1::2::nil.
-Proof.
-compute.
-reflexivity.
-Qed.
+(*  Test for  delete *)
 
 Example test_9: exist 5 (delete 5 ex2) = false.
 Proof.
 compute.
 reflexivity.
 Qed.
+
+
+(* function to count number of elements in a tree *)
 
 Fixpoint count (T: tree nat): nat :=
   match T with
@@ -333,9 +392,13 @@ Fixpoint count (T: tree nat): nat :=
     |quadnode _ _ _ f1 f2 f3 f4 => 3 + (count f1) + (count f2) + (count f3) + (count f4)           end.  
 
 
+(* function to test if 2 trees have same number of elements *)
+
 Definition equals_nb (t1: tree nat)(t2 : tree nat): bool :=
   beq_nat (count t1) (count t2).
   
+
+(* function to test if 2 trees have same elements *)
 
 Fixpoint equals_value (t1 : tree nat)(t2 : tree nat): bool :=
   match t1 with
@@ -354,9 +417,12 @@ Fixpoint equals_value (t1 : tree nat)(t2 : tree nat): bool :=
                                           (equals_value f4 t2)))
   end.
 
+(* Egality function between 2 trees *)
+
 Definition equal (t1: tree nat)(t2: tree nat) : bool :=
   andb (equals_value t1 t2) (equals_nb t1 t2).
 
+(* Test for egality *)
 
 Example test_10: equal tree_4 tree_4  = true.
 Proof.
@@ -370,6 +436,7 @@ compute.
 reflexivity.
 Qed.
 
+(* functions Min and Max *)
 
 Definition max (a:nat) (b:nat) : nat :=
 if ble_nat b a 
@@ -378,6 +445,8 @@ then a else b.
 Definition min (a:nat) (b:nat) :nat :=
 if ble_nat b a 
 then b else a.
+
+(* functions for biggest and smallest height *)
 
 Fixpoint hauteurMax(t:tree nat ) : nat :=
 match t with
@@ -398,29 +467,29 @@ end.
 (* inspiré de lafonction estComplet
 http://pauillac.inria.fr/~cheno/taupe/transparents/arbres-par4.pdf *)
 
-Fixpoint estEquilibre (t : tree nat) : bool :=
+Fixpoint is_balanced_height (t : tree nat) : bool :=
 match t with
 |leaf =>true
 |binode _ tg td =>  if (beq_nat (hauteurMax tg) (hauteurMax td)) then 
-                      andb (estEquilibre tg) (estEquilibre td)
+                      andb (is_balanced_height tg) (is_balanced_height td)
                       else false
 
 |trinode _ _ tg tm td =>  if (beq_nat (hauteurMax tg) (hauteurMax td)) then
                               if (beq_nat (hauteurMax tg) (hauteurMax tm)) then
-                                  (estEquilibre tg) && (estEquilibre td) && (estEquilibre tm)
+                                  (is_balanced_height tg) && (is_balanced_height td) && (is_balanced_height tm)
                                  else false
                          else false
 |quadnode _ _ _ t1 t2 t3 t4 => if (beq_nat (hauteurMax t1) (hauteurMax t2)) then
                                    if (beq_nat (hauteurMax t1) (hauteurMax t3)) then
                                       if (beq_nat (hauteurMax t1) (hauteurMax t4 )) then
-                                         (estEquilibre t1) && (estEquilibre t2) && (estEquilibre t3) && (estEquilibre t4)
+                                         (is_balanced_height t1) && (is_balanced_height t2) && (estEquilibre t3) && (estEquilibre t4)
                                       else false
                                    else false
                                 else false
 end.
 
 
-(* PROBLEM WITH MATCH AFTER MATCH NEED HELP !!! THEN SHOULD START LEMMES ONCE THIS IS DONE *)
+
 
 Fixpoint ordered(t: tree nat): bool :=
   match t with
@@ -428,216 +497,162 @@ Fixpoint ordered(t: tree nat): bool :=
     |binode e f1 f2 => match f1 with
                          |leaf => true
                          |binode e1 _ _ => if ble_nat e1 e then
-                                            ordered f1
-                                          else
-                                            false
-                         |trinode e1 e2 _ _ _ => if ble_nat e2 e then
-                                                    ordered f1
-                                                  else
-                                                    false
-                         |quadnode e1 e2 e3 _ _ _ _ => if (ble_nat e3 e) then
-                                                         ordered f1
-                                                       else
-                                                        false
-                       end
-    |trinode e1 e2 f1 f2 f3 => if ble_nat e1 e2 then(
-                                 match f1 with  (*first son smaller than e *)
-                                   |leaf => true
-                                   |binode e1' _ _ => if ble_nat e1' e1 then
-                                                      ordered f1
-                                                    else
-                                                      false
-                                   |trinode _ e2' _ _ _ => if ble_nat e2' e1 then
-                                                             ordered f1
-                                                           else
-                                                             false
-                                   |quadnode _ _ e3' _ _ _ _ => if ble_nat e3' e1 then
-                                                                  ordered f1
-                                                                else
-                                                                  false
-                                 end
-                                 (*match f2 with
-                                   |leaf => true
-                                   |binode e1' _ _ => if andb (ble_nat e1 e1')(ble_nat e1' e2) then
-                                                        ordered f2
-                                                      else
-                                                        false
-                                   |trinode _ e2' _ _ _ => if andb (ble_nat e1 e2')(ble_nat e2' e2) then
-                                                             ordered f2
-                                                           else
-                                                             false
-                                   |quadnode _ _ e3' _ _ _ _ => if andb (ble_nat e1 e3') (ble_nat e2 e3') then
-                                                                  ordered f2
-                                                                else
-                                                                  false
-                                     end*)
-                                    match f3 with
-                                     |leaf => true
-                                     |binode e1' _ _ => if ble_nat e2 e1' then
-                                                          ordered f3
-                                                        else
-                                                          false
-                                     |trinode _ e2' _ _ _ => if ble_nat e2 e2' then
-                                                               ordered f3
-                                                             else
-                                                               false
-                                     |quadnode _ _ e3' _ _ _ _ => if ble_nat e2 e3' then
-                                                                    ordered f3
-                                                                  else
-                                                                    false
-                                   end
-                               )else
-                                  false
-                                 
-    |_ => true
-  end.
-
-(*
-Fixpoint ordered (t: tree nat): bool :=
-  match t with
-    |leaf => true 
-    |binode e f1 f2 => match f1 with  (*first son smaller than e  *)
-                         |leaf => true
-                         |binode e1 _ _ => if ble_nat e1 e then
                                              ordered f1
                                            else
                                              false
                          |trinode e1 e2 _ _ _ => if ble_nat e2 e then
-                                                    ordered f1
-                                                  else
-                                                    false
+                                                   ordered f1
+                                                 else
+                                                   false
                          |quadnode e1 e2 e3 _ _ _ _ => if (ble_nat e3 e) then
                                                          ordered f1
                                                        else
                                                          false
-                        end
-                       match f2 with (*second son bigger than e*)
-                         |binode e1 _ _ => if ble_nat e e1 then
-                                             ordered f2
-                                           else
-                                             false
-                         |trinode e1 e2 _ _ _ => if ble_nat e e2 then
-                                                    ordered f2
-                                                  else
-                                                    false
-                         |quadnode e1 e2 e3 _ _ _ _ => if ble_nat e e3 then
-                                                         ordered f2
-                                                       else
-                                                         false
-                         |leaf => true
-                        end  
+                       end
     |trinode e1 e2 f1 f2 f3 => if ble_nat e1 e2 then
-                                 match f1 with  (*first son smaller than e *)
-                                   |leaf => true
-                                   |binode e1' _ _ => if ble_nat e1' e1 then
-                                                      ordered f1
-                                                    else
-                                                      false
-                                   |trinode _ e2' _ _ _ => if ble_nat e2' e1 then
-                                                             ordered f1
-                                                           else
-                                                             false
-                                   |quadnode _ _ e3' _ _ _ _ => if ble_nat e3' e1 then
-                                                                  ordered f1
-                                                                else
+                                 let x :=  match f1 with  (*first son smaller than e *)
+                                             |leaf => true
+                                             |binode e1' _ _ => if ble_nat e1 e1' then                                             
                                                                   false
-                                 end
-                                   match f2 with
-                                     |leaf => true
-                                     |binode e1' _ _ => if andb (ble_nat e1 e1')(ble_nat e1' e2) then
-                                                          ordered f2
-                                                        else
-                                                          false
-                                     |trinode _ e2' _ _ _ => if andb (ble_nat e1 e2')(ble_nat e2' e2) then
-                                                               ordered f2
-                                                             else
-                                                               false
-                                     |quadnode _ _ e3' _ _ _ _ => if andb (ble_nat e1 e3') (ble_nat e2 e3') then
+                                                                else
+                                                                  ordered f1
+                                             |trinode _ e2' _ _ _ => if ble_nat e1 e2 then
+                                                                       false
+                                                                     else
+                                                                       ordered f1
+                                             |quadnode _ _ e3' _ _ _ _ => if ble_nat e1 e3' then
+                                                                            false
+                                                                          else
+                                                                            ordered f1
+                                           end 
+                                 in
+                                 if x then
+                                   let x1 := match f2 with
+                                               |leaf => true
+                                               |binode e1' _ _ => if andb (ble_nat e1 e1')(ble_nat e1' e2) then
                                                                     ordered f2
                                                                   else
                                                                     false
-                                    end
-                                   match f3 with
-                                     |_ => true
-                                     |binode e1' _ _ => if ble_nat e2 e1' then
-                                                          ordered f3
-                                                        else
-                                                          false
-                                     |trinode _ e2' _ _ _ => if ble_nat e2 e2' then
-                                                               ordered f3
-                                                             else
-                                                               false
-                                     |quadnode _ _ e3' _ _ _ _ => if ble_nat e2 e3' then
-                                                                    ordered f3
-                                                                  else
-                                                                    false
-                                   end
-                               else
-                                 false
-    |quadnode e1 e2 e3 f1 f2 f3 f4 => if andb (ble_nat e1 e2) (ble_nat e2 e3) then
-                                        match f1 with  (*first son smaller than e *)
-                                          |leaf => true
-                                          |binode e1' _ _ => if ble_nat e1' e1 then
-                                                               ordered f1
-                                                             else
-                                                               false
-                                          |trinode _ e2' _ _ _ => if ble_nat e2' e1 then
-                                                                    ordered f1
-                                                                  else
-                                                                    false
-                                          |quadnode _ _ e3' _ _ _ _ => if ble_nat e3' e1 then
-                                                                         ordered f1
-                                                                       else
-                                                                         false
-                                        end
-                                        match f2 with
-                                          |_ => true
-                                          |binode e1' _ _ => if andb (ble_nat e1 e1')(ble_nat e1' e2) then
-                                                               ordered f2
-                                                             else
-                                                               false
-                                          |trinode _ e2' _ _ _ => if andb (ble_nat e1 e2')(ble_nat e2' e2) then
-                                                                    ordered f2
-                                                                  else
-                                                                    false
-                                          |quadnode _ _ e3' _ _ _ _ => if andb (ble_nat e1 e3') (ble_nat e2 e3') then
+                                               |trinode _ e2' _ _ _ => if andb (ble_nat e1 e2')(ble_nat e2' e2) then
                                                                          ordered f2
                                                                        else
                                                                          false
-                                        end
-                                        match f3 with
-                                          |_ => true
-                                          |binode e1' _ _ => if andb (ble_nat e2 e1')(ble_nat e1' e3) then
-                                                               ordered f3
-                                                             else
-                                                               false
-                                          |trinode _ e2' _ _ _ => if andb (ble_nat e1 e2')(ble_nat e2' e2) then
-                                                                    ordered f3
-                                                                  else
-                                                                    false
-                                          |quadnode _ _ e3' _ _ _ _ => if andb (ble_nat e2 e3')(ble_nat e3' e3) then
-                                                                         ordered f3
-                                                                       else
-                                                                         false                   
-                                        end
-                                        match f4 with
-                                          |_ => true
-                                          |binode e1' _ _ => if ble_nat e3 e1 then
-                                                               ordered f4
-                                                             else
-                                                               false
-                                          |trinode _ e2' _ _ _ => if ble_nat e3 e2' then
-                                                                    ordered f4
-                                                                  else
-                                                                    false
-                                          |quadnode _ _ e3' _ _ _ _ => if ble_nat e3 e3' then
-                                                                         ordered f4
-                                                                       else
-                                                                         false
-                                        end
+                                               |quadnode _ _ e3' _ _ _ _ => if andb (ble_nat e1 e3') (ble_nat e2 e3') then
+                                                                              ordered f2
+                                                                            else
+                                                                              false
+                                             end
+                                   in
+                                   if x1 then
+                                     match f3 with
+                                       |leaf => true
+                                       |binode e1' _ _ => if ble_nat e2 e1' then
+                                                            ordered f3
+                                                          else
+                                                            false
+                                       |trinode _ e2' _ _ _ => if ble_nat e2 e2' then
+                                                                 ordered f3
+                                                               else
+                                                                 false
+                                       |quadnode _ _ e3' _ _ _ _ => if ble_nat e2 e3' then
+                                                                      ordered f3
+                                                                    else
+                                                                      false
+                                     end
+                                   else
+                                     false
+                                 else
+                                   false  
+                               else
+                                 false
+    |quadnode e1 e2 e3 f1 f2 f3 f4 => if andb (ble_nat e1 e2) (ble_nat e2 e3) then
+                                        let x := match f1 with  (*first son smaller than e *)
+                                                   |leaf => true
+                                                   |binode e1' _ _ => if ble_nat e1' e1 then
+                                                                        ordered f1
+                                                                      else
+                                                                        false
+                                                   |trinode _ e2' _ _ _ => if ble_nat e2' e1 then
+                                                                             ordered f1
+                                                                           else
+                                                                             false
+                                                   |quadnode _ _ e3' _ _ _ _ => if ble_nat e3' e1 then
+                                                                                  ordered f1
+                                                                                else
+                                                                                  false
+                                                 end
+                                        in
+                                        if x then
+                                          let x1 :=
+                                              match f2 with
+                                                |leaf => true
+                                                |binode e1' _ _ => if andb (ble_nat e1 e1')(ble_nat e1' e2) then
+                                                                     ordered f2
+                                                                   else
+                                                                     false
+                                                |trinode _ e2' _ _ _ => if andb (ble_nat e1 e2')(ble_nat e2' e2) then
+                                                                          ordered f2
+                                                                        else
+                                                                          false
+                                                |quadnode _ _ e3' _ _ _ _ => if andb (ble_nat e1 e3') (ble_nat e2 e3') then
+                                                                               ordered f2
+                                                                             else
+                                                                               false
+                                              end
+                                          in
+                                          if x1 then
+                                            let x2 :=
+                                                match f3 with
+                                                  |leaf => true
+                                                  |binode e1' _ _ => if andb (ble_nat e2 e1')(ble_nat e1' e3) then
+                                                                       ordered f3
+                                                                     else
+                                                                       false
+                                                  |trinode _ e2' _ _ _ => if andb (ble_nat e1 e2')(ble_nat e2' e2) then
+                                                                            ordered f3
+                                                                          else
+                                                                            false
+                                                  |quadnode _ _ e3' _ _ _ _ => if andb (ble_nat e2 e3')(ble_nat e3' e3) then
+                                                                                 ordered f3
+                                                                               else
+                                                                                 false                   
+                                                end
+                                            in
+                                            if x2 then
+                                              match f4 with
+                                                |leaf => true
+                                                |binode e1' _ _ => if ble_nat e3 e1' then
+                                                                     ordered f4
+                                                                   else
+                                                                     false
+                                                |trinode _ e2' _ _ _ => if ble_nat e3 e2' then
+                                                                          ordered f4
+                                                                        else
+                                                                          false
+                                                |quadnode _ _ e3' _ _ _ _ => if ble_nat e3 e3' then
+                                                                               ordered f4
+                                                                             else
+                                                                               false
+                                              end
+                                            else
+                                              false
+                                          else
+                                            false
+                                        else
+                                          false
                                       else
                                         false
-  end. *)
+  end.
 
+ 
+Example test_12: ordered ex1 = true.
+Proof.
+compute.
+reflexivity.
+Qed.
 
-
+Example test_13: ordered ex2 = true.
+Proof.
+compute.
+reflexivity.
+Qed.
