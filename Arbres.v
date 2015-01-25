@@ -286,6 +286,20 @@ reflexivity.
 Qed.
 
 
+Lemma ble_nat_n_n : forall X:nat, ble_nat X X = true.
+Proof.
+intros.
+induction X.
++
+ reflexivity.
++
+ simpl.
+ elim IHX.
+ reflexivity.
+Qed.
+
+
+
 (* Lemmas for ADD *)
 
 Lemma add_exist:
@@ -298,30 +312,48 @@ induction T.
   rewrite <- beq_nat_refl.
   reflexivity.
 +
-  induction T1.
-  -
-    simpl.
-    induction T2.
+ unfold add.
+ simpl.
+ destruct (ble_nat a X).
+ -
+ case T2.
+ *
+ simpl.
+ destruct (ble_nat X a).
+ rewrite <- beq_nat_refl.
+ destruct (beq_nat X a).
+ reflexivity.
+ reflexivity.
+ destruct (beq_nat X a).
+ reflexivity.
+ rewrite <- (beq_nat_refl).
+ reflexivity.
+ *
+ intros.
+
+ simpl.
+
+
+  destruct T1.
+  -    
+    destruct T2.
     *
-      .
-      
-      (*case X.
-      case a.
-        rewrite ble_nat_refl.
-        simpl.
-        reflexivity.
+    simpl.
+    destruct (ble_nat a X).
+    simpl.
+    rewrite <- beq_nat_refl.
+    case (beq_nat X a).
+    reflexivity.
+    reflexivity.
+    simpl.
+    rewrite <-beq_nat_refl.
+    reflexivity.
+    *
+    destruct (ble_nat a X).
+    
 
-        intros.
-        simpl.
-        reflexivity.
 
-        intros.
-        destruct a.
-        simpl.
-        rewrite <- beq_nat_refl.
-        reflexivity.
-        
-        simpl. *)
+   
         
 (* function places all values of T in a tree except for a *)
                          
