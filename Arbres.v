@@ -302,6 +302,7 @@ Qed.
 
 (* Lemmas for ADD *)
 
+(* CA CRASHE MON ORDI CHAQUE FOIS C ME ENERVE DEPUIS 2 JOURS
 Lemma add_exist:
   forall T: tree nat ,forall X: nat, exist X (add X T) = true.
 Proof.
@@ -352,7 +353,7 @@ induction T.
     destruct (ble_nat a X).
     
 
-
+*)
    
         
 (* function places all values of T in a tree except for a *)
@@ -404,6 +405,7 @@ end.
 
 Definition delete (a:nat)(T: tree nat): tree nat :=
   from_list (to_list a T).
+
 
 (*  Test for  delete *)
 
@@ -499,6 +501,11 @@ end.
 (* inspiré de lafonction estComplet
 http://pauillac.inria.fr/~cheno/taupe/transparents/arbres-par4.pdf *)
 
+Definition is_balanced_height(t:tree nat): bool :=
+    beq_nat (hauteurMax t)  (hauteurMin t).
+   
+
+(*
 Fixpoint is_balanced_height (t : tree nat) : bool :=
 match t with
 |leaf =>true
@@ -514,13 +521,24 @@ match t with
 |quadnode _ _ _ t1 t2 t3 t4 => if (beq_nat (hauteurMax t1) (hauteurMax t2)) then
                                    if (beq_nat (hauteurMax t1) (hauteurMax t3)) then
                                       if (beq_nat (hauteurMax t1) (hauteurMax t4 )) then
-                                         (is_balanced_height t1) && (is_balanced_height t2) && (estEquilibre t3) && (estEquilibre t4)
+                                         (is_balanced_height t1) && (is_balanced_height t2) && ( is_balanced_height t3) && ( is_balanced_height t4)
                                       else false
                                    else false
                                 else false
 end.
+*)
 
 
+Lemma is_balanced_height_add:
+  forall T: tree nat ,forall X: nat, is_balanced_height (add X T) = true.
+  Proof.
+  intros.
+  induction T.
++
+  simpl.
+  reflexivity.
++
+ 
 
 
 Fixpoint ordered(t: tree nat): bool :=
