@@ -85,6 +85,8 @@ Fixpoint ble_nat (n m : nat) : bool :=
       end
   end.
 
+Definition blt_nat (n m : nat) : bool :=
+  if andb (ble_nat n m) (negb (beq_nat n m)) then true else false.
 
 Lemma  ble_nat_refl:
 forall X: nat, (ble_nat X X) = true.
@@ -171,15 +173,17 @@ Qed.
 Fixpoint add (a:nat) (T : tree nat): tree nat :=
 match T with
 |leaf => binode a leaf leaf
-|binode e fg fd => if ble_nat e a then
+|binode e fg fd =>    if beq_nat a e then T
+                      else if blt_nat e a then
                       match fd with
                       |leaf => trinode e a leaf leaf leaf
-                      |quadnode e1 e2 e3 f1 f2 f3 f4 => if ble_nat a e1 then (trinode e e2 fg 
+                      |quadnode e1 e2 e3 f1 f2 f3 f4 =>if ((beq_nat a e1)||(beq_nat a e2) || (beq_nat a e3)) then T
+                                                        else if blt_nat a e1 then (trinode e e2 fg 
                                                            (binode e1 (add a f1) f2) (binode e3 f3 f4))
-                                                        else if ble_nat a e2 then (trinode e e2 fg 
+                                                        else if blt_nat a e2 then (trinode e e2 fg 
                                                            (binode e1 f1 (add a f2)) (binode e3 f3 f4)) 
-                                                        else if ble_nat a e3 then (trinode e e2 fg 
-                                                           (binode e1 f1 f2) (binode e3 (add a f3) f4)) 
+                                                        else if blt_nat a e3 then (trinode e e2 fg 
+                                                           (binode e1 f1 f2) (binode e3 (add a f3) f4))
                                                         else trinode e e2 fg 
                                                            (binode e1 f1 f2) (binode e3 f3 (add a f4))
                       |_ => binode e fg (add a fd)
@@ -187,43 +191,47 @@ match T with
                    else 
                       match fg with
                       |leaf => trinode a e leaf leaf leaf
-                      |quadnode e1 e2 e3 f1 f2 f3 f4 =>if ble_nat a e1 then (trinode e e2
+                      |quadnode e1 e2 e3 f1 f2 f3 f4 => if ((beq_nat a e1)||(beq_nat a e2) || (beq_nat a e3)) then T
+                                                        else if blt_nat a e1 then (trinode e e2
                                                            (binode e1 (add a f1) f2) (binode e3 f3 f4) fd)
-                                                        else if ble_nat a e2 then (trinode e e2 fg 
+                                                        else if blt_nat a e2 then (trinode e e2 fg 
                                                            (binode e1 f1 (add a f2)) (binode e3 f3 f4)) 
-                                                        else if ble_nat a e3 then (trinode e e2 
+                                                        else if blt_nat a e3 then (trinode e e2 
                                                            (binode e1 f1 f2) (binode e3 (add a f3) f4) fd) 
                                                         else (trinode e e2 
                                                            (binode e1 f1 f2) (binode e3 f3 (add a f4)) fd) 
                       |_ => binode e (add a fg) fd
                       end
                   
-|trinode e1 e2 fg fm fd => if ble_nat a e1 then
+|trinode e1 e2 fg fm fd => if ((beq_nat a e1) || (beq_nat a e2)) then T
+                           else if blt_nat a e1 then
                               match fg with 
                               |leaf => quadnode a e1 e2 leaf leaf leaf leaf
-                              |quadnode i1 i2 i3 f1 f2 f3 f4=> if ble_nat a i1 then 
+                              |quadnode i1 i2 i3 f1 f2 f3 f4=> if ((beq_nat a i1)||(beq_nat a i2) || (beq_nat a i3))                                                                 then T
+                                                               else if blt_nat a i1 then 
                                                                 (quadnode i2 e1 e2 
                                                                 (binode i1 (add a f1) f2) (binode i3 f3 f4) fm fd)
-                                                               else if ble_nat a i2 then 
+                                                               else if blt_nat a i2 then 
                                                                 (quadnode i1 e1 e2 
                                                                 (binode i2 f1 (add a f2)) (binode i3 f3 f4) fm fd)
-                                                               else if ble_nat a i3 then 
+                                                               else if blt_nat a i3 then 
                                                                  (quadnode i1 e1 e2 
                                                                  (binode i2 f1 f2) (binode i3 (add a f3) f4) fm fd)
                                                                else (quadnode i1 e1 e2 
                                                                  (binode i2 f1 f2) (binode i3 f3 (add a f4)) fm fd)
                               |_ => trinode e1 e2 (add a fg) fm fd
                               end
-                           else if ble_nat a e2 then
+                           else if blt_nat a e2 then
                               match fm with
                               |leaf => quadnode e1 a e2 leaf leaf leaf leaf
-                              |quadnode i1 i2 i3 f1 f2 f3 f4 => if ble_nat a i1 then 
+                              |quadnode i1 i2 i3 f1 f2 f3 f4 => if ((beq_nat a i1)||(beq_nat a i2) || (beq_nat a i3)) then T
+                                                                else if blt_nat a i1 then 
                                                                  (quadnode e1 i2 e2
                                                                  fg (binode i1 (add a f1) f2) (binode i3 f3 f4) fd)                                                                 
-                                                                else if ble_nat a i2 then 
+                                                                else if blt_nat a i2 then 
                                                                  (quadnode e1 i2 e2
                                                                  fg (binode i1 f1 (add a f2)) (binode i3 f3 f4) fd)  
-                                                                else if ble_nat a i3 then  
+                                                                else if blt_nat a i3 then  
                                                                  (quadnode e1 i2 e2
                                                                  fg (binode i1 f1 f2) (binode i3 (add a f3) f4) fd)  
                                                                 else 
@@ -234,24 +242,26 @@ match T with
                            else
                               match fd with
                               |leaf => quadnode e1 e2 a leaf leaf leaf leaf
-                              |quadnode i1 i2 i3 f1 f2 f3 f4 => if ble_nat a i1 then 
+                              |quadnode i1 i2 i3 f1 f2 f3 f4 => if ((beq_nat a i1)||(beq_nat a i2) || (beq_nat a i3)) then T
+                                                                else if blt_nat a i1 then 
                                                                  (quadnode e1 e2 i2
                                                                  fg fm (binode i1 (add a f1) f2) (binode i3 f3 f4))
-                                                                else if ble_nat a i2 then 
+                                                                else if blt_nat a i2 then 
                                                                  (quadnode e1 e2 i2
                                                                  fg fm (binode i1 f1 (add a f2)) (binode i3 f3 f4))
-                                                                else if ble_nat a i3 then 
+                                                                else if blt_nat a i3 then 
                                                                  (quadnode e1 e2 i2
                                                                  fg fm (binode i1 f1 f2)) (binode i3 (add a f3) f4)
                                                                 else (quadnode e1 e2 i2
                                                                  fg fm (binode i1 f1 f2)) (binode i3 f3 (add a f4))
                               |_=> trinode e1 e2 fg fm (add a fd)
                               end
-|quadnode e1 e2 e3 f1 f2 f3 f4 => if ble_nat a e1 then
+|quadnode e1 e2 e3 f1 f2 f3 f4 => if ((beq_nat a e1)||(beq_nat a e2) || (beq_nat a e3)) then T
+                                  else if blt_nat a e1 then
                                    binode e2 (binode e1 (add a f1) f2) (binode e3 f3 f4) 
-                                  else if ble_nat a e2 then
+                                  else if blt_nat a e2 then
                                    binode e2 (binode e1 f1 (add a f2)) (binode e3 f3 f4) 
-                                  else if ble_nat a e3 then
+                                  else if blt_nat a e3 then
                                    binode e2 (binode e1 f1 f2) (binode e3 (add a f3) f4) 
                                   else  
                                    binode e2 (binode e1 f1 f2) (binode e3 f3 (add a f4))
@@ -299,61 +309,6 @@ induction X.
 Qed.
 
 
-
-(* Lemmas for ADD *)
-
-(* CA CRASHE MON ORDI CHAQUE FOIS C ME ENERVE DEPUIS 2 JOURS
-Lemma add_exist:
-  forall T: tree nat ,forall X: nat, exist X (add X T) = true.
-Proof.
-intros.
-induction T.
-+
-  simpl.
-  rewrite <- beq_nat_refl.
-  reflexivity.
-+
- unfold add.
- simpl.
- destruct (ble_nat a X).
- -
- case T2.
- *
- simpl.
- destruct (ble_nat X a).
- rewrite <- beq_nat_refl.
- destruct (beq_nat X a).
- reflexivity.
- reflexivity.
- destruct (beq_nat X a).
- reflexivity.
- rewrite <- (beq_nat_refl).
- reflexivity.
- *
- intros.
-
- simpl.
-
-
-  destruct T1.
-  -    
-    destruct T2.
-    *
-    simpl.
-    destruct (ble_nat a X).
-    simpl.
-    rewrite <- beq_nat_refl.
-    case (beq_nat X a).
-    reflexivity.
-    reflexivity.
-    simpl.
-    rewrite <-beq_nat_refl.
-    reflexivity.
-    *
-    destruct (ble_nat a X).
-    
-
-*)
    
         
 (* function places all values of T in a tree except for a *)
@@ -490,55 +445,142 @@ match t with
 |quadnode _ _ _ t1 t2 t3 t4 => 1+ (max (hauteurMax t1) (max (hauteurMax t2) (max (hauteurMax t3) (hauteurMax t4))))
 end.
 
+
+(*
+
+Lemmas to show that hauteur increases from son to father by 1
+
+*)
+
+Lemma hauteur_max_plus_binode_1:
+  forall T2 T1 T3:tree nat,forall n:nat,forall x: nat,(T1 = binode x T2 T3) /\ (n = (max (hauteurMax T2) (hauteurMax T3))) ->
+                                                      (hauteurMax T1) = (S n).
+  Proof.
+  intro.
+  intro T1.
+  intro T3.
+  intros n x.
+  intro H1.
+  destruct H1 as [H1 H2].
+  rewrite H1.
+  simpl.
+  rewrite H2.
+  reflexivity.
+Qed.  
+  
+Lemma hauteur_max_plus_trinode_1:
+  forall T2 T1 T3 T4:tree nat,forall n:nat,forall x1: nat,forall x: nat,(T1 = trinode x x1 T2 T3 T4) /\ (n = max (hauteurMax T2) (max (hauteurMax T3) (hauteurMax T4))) -> (hauteurMax T1) = (S n). 
+Proof.
+intros.
+destruct H as [H1 H2].
+rewrite H1.
+simpl.
+rewrite H2.
+reflexivity.
+Qed.
+
+Lemma hauteur_max_plus_quadnode_1:
+  forall T2 T1 T3 T4 T5:tree nat,forall n:nat,forall x1: nat,forall x,forall x2: nat,(T1 = quadnode x x1 x2 T2 T3 T4 T5) /\ (n = (max (hauteurMax T2) (max (hauteurMax T3) (max (hauteurMax T4) (hauteurMax T5))))) -> (hauteurMax T1) = (S n). 
+Proof.
+intros.
+destruct H as [H1 H2].
+rewrite H1.
+simpl.
+rewrite H2.
+reflexivity.
+Qed.
+
 Fixpoint hauteurMin(t:tree nat ) : nat :=
 match t with
 |leaf => 0
-|binode _ tg td => 1 + (min (hauteurMax tg) (hauteurMax td))
-|trinode _ _ tg tm td => 1 + (min (hauteurMax tg) (min (hauteurMax tm) (hauteurMax td)))
-|quadnode _ _ _ t1 t2 t3 t4 => 1+ (min (hauteurMax t1) (min (hauteurMax t2) (min (hauteurMax t3) (hauteurMax t4))))
+|binode _ tg td => 1 + (min (hauteurMin tg) (hauteurMin td))
+|trinode _ _ tg tm td => 1 + (min (hauteurMin tg) (min (hauteurMin tm) (hauteurMin td)))
+|quadnode _ _ _ t1 t2 t3 t4 => 1+ (min (hauteurMin t1) (min (hauteurMin t2) (min (hauteurMin t3) (hauteurMin t4))))
 end.
 
-(* inspiré de lafonction estComplet
-http://pauillac.inria.fr/~cheno/taupe/transparents/arbres-par4.pdf *)
+
 
 Definition is_balanced_height(t:tree nat): bool :=
     beq_nat (hauteurMax t)  (hauteurMin t).
-   
+ 
 
-(*
-Fixpoint is_balanced_height (t : tree nat) : bool :=
-match t with
-|leaf =>true
-|binode _ tg td =>  if (beq_nat (hauteurMax tg) (hauteurMax td)) then 
-                      andb (is_balanced_height tg) (is_balanced_height td)
-                      else false
-
-|trinode _ _ tg tm td =>  if (beq_nat (hauteurMax tg) (hauteurMax td)) then
-                              if (beq_nat (hauteurMax tg) (hauteurMax tm)) then
-                                  (is_balanced_height tg) && (is_balanced_height td) && (is_balanced_height tm)
-                                 else false
-                         else false
-|quadnode _ _ _ t1 t2 t3 t4 => if (beq_nat (hauteurMax t1) (hauteurMax t2)) then
-                                   if (beq_nat (hauteurMax t1) (hauteurMax t3)) then
-                                      if (beq_nat (hauteurMax t1) (hauteurMax t4 )) then
-                                         (is_balanced_height t1) && (is_balanced_height t2) && ( is_balanced_height t3) && ( is_balanced_height t4)
-                                      else false
-                                   else false
-                                else false
-end.
-*)
+Lemma is_balanced_equal:
+  forall T1, is_balanced_height(T1) = true -> (hauteurMax T1) = (hauteurMin T1).
+Proof.
+intro.
+unfold is_balanced_height.
+intro.
+apply beq_nat_eq.
+rewrite H.
+reflexivity.
+Qed.
 
 
-Lemma is_balanced_height_add:
-  forall T: tree nat ,forall X: nat, is_balanced_height (add X T) = true.
-  Proof.
-  intros.
-  induction T.
+
+
+Lemma is_balanced_son_binode:
+  forall T2 T1 T3:tree nat,forall x: nat,(T1 = binode x T2 T3) /\ is_balanced_height(T1)=true ->  is_balanced_height(T2)=true.
+Proof.
+induction T2.
 +
+  intros T3 T1 X H.
+  destruct H as [H1 H2].
+  unfold is_balanced_height.
   simpl.
   reflexivity.
 +
- 
+  intros T3 T1 X H.
+  destruct H as [H1 H2].
+  
++
+  rewrite H1 in H2.
+  apply is_balanced_equal in H2.
+  simpl in H2.
+  SearchPattern(S _ = S _).
+  destruct T2.
+  -
+    unfold is_balanced_height.
+    simpl.
+    reflexivity.
+  -
+    simpl.
+    
+
+
+Lemma is_balanced_height_add:
+  forall T: tree nat ,forall X: nat, (is_balanced_height(T)=true) -> (is_balanced_height(add X T)=true).
+  Proof.
+  intros.
+  induction T.
++ (*case T = Leaf *)
+  simpl.
+  reflexivity.
++ (*case T = binode *)
+  simpl.
+  case_eq (beq_nat X a).
+  -
+    (*cas a = X *)
+    intro.
+    exact H.
+  - 
+    intro Htrue.
+    case_eq (blt_nat a X).
+    *
+      intro.
+      destruct T2.
+      (*case T2 = LEAF *)
+      unfold is_balanced_height.
+      simpl.
+      reflexivity.
+      (*T2 = binode *)
+      
+      simpl.
+      
+      
+   (* assert (Hle: a <= X). *)
+    
+      
+
 
 
 Fixpoint ordered(t: tree nat): bool :=
@@ -706,3 +748,68 @@ Proof.
 compute.
 reflexivity.
 Qed.
+
+
+
+
+
+
+
+
+
+
+
+(* Lemmas for ADD *)
+
+(* CA CRASHE MON ORDI CHAQUE FOIS C ME ENERVE DEPUIS 2 JOURS
+Lemma add_exist:
+  forall T: tree nat ,forall X: nat, exist X (add X T) = true.
+Proof.
+intros.
+induction T.
++
+  simpl.
+  rewrite <- beq_nat_refl.
+  reflexivity.
++
+ unfold add.
+ simpl.
+ destruct (ble_nat a X).
+ -
+ case T2.
+ *
+ simpl.
+ destruct (ble_nat X a).
+ rewrite <- beq_nat_refl.
+ destruct (beq_nat X a).
+ reflexivity.
+ reflexivity.
+ destruct (beq_nat X a).
+ reflexivity.
+ rewrite <- (beq_nat_refl).
+ reflexivity.
+ *
+ intros.
+
+ simpl.
+
+
+  destruct T1.
+  -    
+    destruct T2.
+    *
+    simpl.
+    destruct (ble_nat a X).
+    simpl.
+    rewrite <- beq_nat_refl.
+    case (beq_nat X a).
+    reflexivity.
+    reflexivity.
+    simpl.
+    rewrite <-beq_nat_refl.
+    reflexivity.
+    *
+    destruct (ble_nat a X).
+    
+
+*)
