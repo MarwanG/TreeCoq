@@ -141,7 +141,7 @@ Fixpoint exist (a:nat)(T:tree nat): bool :=
                                          then exist a f2
                                       else if ble_nat a e3 
                                          then exist a f3
-                                      else exist a f4    
+                                      else exist a f4
  end.
 
 
@@ -202,7 +202,6 @@ match T with
                                                            (binode e1 f1 f2) (binode e3 f3 (add a f4)) fd) 
                       |_ => binode e (add a fg) fd
                       end
-                  
 |trinode e1 e2 fg fm fd => if ((beq_nat a e1) || (beq_nat a e2)) then T
                            else if blt_nat a e1 then
                               match fg with 
@@ -227,7 +226,7 @@ match T with
                               |quadnode i1 i2 i3 f1 f2 f3 f4 => if ((beq_nat a i1)||(beq_nat a i2) || (beq_nat a i3)) then T
                                                                 else if blt_nat a i1 then 
                                                                  (quadnode e1 i2 e2
-                                                                 fg (binode i1 (add a f1) f2) (binode i3 f3 f4) fd)                                                                 
+                                                                 fg (binode i1 (add a f1) f2) (binode i3 f3 f4) fd)
                                                                 else if blt_nat a i2 then 
                                                                  (quadnode e1 i2 e2
                                                                  fg (binode i1 f1 (add a f2)) (binode i3 f3 f4) fd)  
@@ -309,10 +308,8 @@ induction X.
 Qed.
 
 
-   
-        
 (* function places all values of T in a tree except for a *)
-                         
+
 Fixpoint to_list (a:nat)(T: tree nat): list nat :=
   match T with
     |trinode e1 e2 fg fm fd => (if beq_nat e1 a then
@@ -334,7 +331,7 @@ Fixpoint to_list (a:nat)(T: tree nat): list nat :=
     |binode e1 f1 f2 =>(if beq_nat e1 a then
                           (to_list a f1) ++ (to_list a f2)
                         else
-                          a :: (to_list a f1) ++ (to_list a f2)
+                          e1 :: (to_list a f1) ++ (to_list a f2)
                         )
     |leaf => nil
   end.
@@ -371,14 +368,49 @@ reflexivity.
 Qed.
 
 
+
+Fixpoint to_list_a (T: tree nat): list nat :=
+  match T with
+    |trinode e1 e2 fg fm fd =>  e1 :: e2 :: (to_list_a fg) ++ (to_list_a fd) ++ (to_list_a fm)
+    |quadnode e1 e2 e3 f1 f2 f3 f4 =>  e1 :: e2 :: e3 :: (to_list_a f1) ++ (to_list_a f2) ++ (to_list_a f3) ++ (to_list_a f4)
+    |binode e1 f1 f2 => e1 :: (to_list_a f1) ++ (to_list_a f2)
+    |leaf => nil
+  end.
+
+Lemma less_than_one:
+   forall T1:tree nat,forall n:nat,forall x: nat, (length  (to_list x T1)) <=  length  (to_list_a T1).
+Proof.
+intros.
+induction T1.
++
+  simpl.
+  SearchPattern(_ <= _).
+  apply le_n.
++
+  simpl.
+  case_eq(beq_nat a x).
+  -
+   intro.
+  
+
+
+
 (* function to count number of elements in a tree *)
 
+
+Fixpoint count(T: tree nat): nat :=
+  length (to_list_a T).
+
+
+(*
 Fixpoint count (T: tree nat): nat :=
   match T with
     |leaf => 0
     |binode _ f1 f2 => 1 + (count f1) + (count f2)
     |trinode _ _ f1 f2 f3 => 2 + (count f1) + (count f2) + (count f3)
-    |quadnode _ _ _ f1 f2 f3 f4 => 3 + (count f1) + (count f2) + (count f3) + (count f4)           end.  
+    |quadnode _ _ _ f1 f2 f3 f4 => 3 + (count f1) + (count f2) + (count f3) + (count f4)           
+end.
+*)
 
 
 (* function to test if 2 trees have same number of elements *)
@@ -466,8 +498,8 @@ Lemma hauteur_max_plus_binode_1:
   simpl.
   rewrite H2.
   reflexivity.
-Qed.  
-  
+Qed.
+
 Lemma hauteur_max_plus_trinode_1:
   forall T2 T1 T3 T4:tree nat,forall n:nat,forall x1: nat,forall x: nat,(T1 = trinode x x1 T2 T3 T4) /\ (n = max (hauteurMax T2) (max (hauteurMax T3) (hauteurMax T4))) -> (hauteurMax T1) = (S n). 
 Proof.
@@ -500,26 +532,52 @@ end.
 
 
 
-Definition is_balanced_height(t:tree nat): bool :=
-    beq_nat (hauteurMax t)  (hauteurMin t).
+Definition is_balanced_height(t:tree nat): Prop :=
+   (hauteurMax t) = (hauteurMin t).
  
 
 Lemma is_balanced_equal:
-  forall T1, is_balanced_height(T1) = true -> (hauteurMax T1) = (hauteurMin T1).
+  forall T1, is_balanced_height(T1)-> (hauteurMax T1) = (hauteurMin T1).
 Proof.
 intro.
 unfold is_balanced_height.
 intro.
-apply beq_nat_eq.
-rewrite H.
-reflexivity.
+simpl in H.
+exact H.
 Qed.
 
 
+Lemma hauteur_plus_1r:
+  forall T2 T3 T1: tree nat,forall x:nat,forall s:nat,(T1 = binode x T2 T3) /\ s =hauteurMax T1   -> s = 1 + (max (hauteurMax T2)(hauteurMax T3)) .
+Proof.
+intros.
+destruct H as [H1 H2].
+rewrite H1 in H2.
+unfold hauteurMax in H2.
+unfold hauteurMax.
+exact H2.
+Qed.
 
+
+(*
+Lemma is_balanced_son_father_binode:
+  forall T2 T3 T1:tree nat,forall x: nat,(T1 = binode x T2 T3) /\ ((is_balanced_height T2) = True) /\ ((is_balanced_height T3) = True) -> (hauteurMax T2) = (hauteurMax T3).
+Proof.
+intros.
+destruct H as [H1 H2].
+destruct H2 as [H2 H3].
+unfold is_balanced_height in H2.
+unfold is_balanced_height in H3.
+destruct H2 as [H2 H4].
+*)
+
+
+
+
+(*
 
 Lemma is_balanced_son_binode:
-  forall T2 T1 T3:tree nat,forall x: nat,(T1 = binode x T2 T3) /\ is_balanced_height(T1)=true ->  is_balanced_height(T2)=true.
+  forall T2 T1 T3:tree nat,forall x: nat,(T1 = binode x T2 T3) /\ is_balanced_height(T1) ->  is_balanced_height(T2).
 Proof.
 induction T2.
 +
@@ -531,24 +589,15 @@ induction T2.
 +
   intros T3 T1 X H.
   destruct H as [H1 H2].
-  
-+
   rewrite H1 in H2.
   apply is_balanced_equal in H2.
   simpl in H2.
-  SearchPattern(S _ = S _).
-  destruct T2.
-  -
-    unfold is_balanced_height.
-    simpl.
-    reflexivity.
-  -
-    simpl.
-    
 
+*)
 
+(*
 Lemma is_balanced_height_add:
-  forall T: tree nat ,forall X: nat, (is_balanced_height(T)=true) -> (is_balanced_height(add X T)=true).
+  forall T: tree nat ,forall X: nat, (is_balanced_height(T)) -> (is_balanced_height(add X T)).
   Proof.
   intros.
   induction T.
@@ -573,15 +622,11 @@ Lemma is_balanced_height_add:
       simpl.
       reflexivity.
       (*T2 = binode *)
-      
       simpl.
-      
-      
+      {
+        +
    (* assert (Hle: a <= X). *)
-    
-      
-
-
+*)
 
 Fixpoint ordered(t: tree nat): bool :=
   match t with
@@ -604,7 +649,7 @@ Fixpoint ordered(t: tree nat): bool :=
     |trinode e1 e2 f1 f2 f3 => if ble_nat e1 e2 then
                                  let x :=  match f1 with  (*first son smaller than e *)
                                              |leaf => true
-                                             |binode e1' _ _ => if ble_nat e1 e1' then                                             
+                                             |binode e1' _ _ => if ble_nat e1 e1' then
                                                                   false
                                                                 else
                                                                   ordered f1
@@ -736,7 +781,7 @@ Fixpoint ordered(t: tree nat): bool :=
                                         false
   end.
 
- 
+
 Example test_12: ordered ex1 = true.
 Proof.
 compute.
@@ -748,13 +793,6 @@ Proof.
 compute.
 reflexivity.
 Qed.
-
-
-
-
-
-
-
 
 
 
